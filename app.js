@@ -21,7 +21,9 @@ var sectionNames = {
 
 // Guard: if GSAP fails to load, show all content immediately
 if (window.gsap && window.ScrollTrigger) {
-  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+  var plugins = [ScrollTrigger];
+  if (window.ScrollToPlugin) plugins.push(ScrollToPlugin);
+  gsap.registerPlugin.apply(gsap, plugins);
 
   // Progress bar
   gsap.to('#progressBar', {
@@ -182,7 +184,11 @@ if (window.gsap && window.ScrollTrigger) {
     dot.addEventListener('click', function() {
       var target = document.getElementById(id);
       if (target) {
-        gsap.to(window, { duration: 1, scrollTo: { y: target, offsetY: 40 }, ease: 'power2.inOut' });
+        if (window.ScrollToPlugin) {
+          gsap.to(window, { duration: 1, scrollTo: { y: target, offsetY: 40 }, ease: 'power2.inOut' });
+        } else {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
     });
     navDotsContainer.appendChild(dot);

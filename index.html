@@ -22,8 +22,8 @@
   <meta name="twitter:image:alt" content="The Curation Stack - Quality Infrastructure for User-Generated Software" />
   <meta name="twitter:site" content="@mustbesimo" />
   <meta name="twitter:creator" content="@mustbesimo" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+  <meta property="og:image:width" content="1376" />
+  <meta property="og:image:height" content="768" />
   <meta property="article:published_time" content="2026-02-01T00:00:00Z" />
   <meta property="article:modified_time" content="2026-02-13T00:00:00Z" />
   <meta property="article:author" content="https://www.linkedin.com/in/simoleonelli/" />
@@ -75,7 +75,7 @@
   <!-- No-JS Fallback -->
   <noscript>
     <style>
-      .hero-label, .hero-subtitle, .hero-author, .companion-note, .hero-meta, .section {
+      .hero-label, .hero-subtitle, .hero-author, .companion-note, .hero-meta, .section, .footer {
         opacity: 1 !important;
         transform: none !important;
         filter: none !important;
@@ -86,6 +86,17 @@
       }
     </style>
   </noscript>
+
+  <!-- CSS safety net: if JS fails entirely, content becomes visible after 4s -->
+  <style>
+    @keyframes fallback-reveal {
+      to { opacity: 1; transform: none; filter: none; }
+    }
+    .hero-label, .hero-subtitle, .hero-author, .companion-note, .hero-meta,
+    .hero h1 .line-inner, .section, .footer {
+      animation: fallback-reveal 0.5s ease forwards 4s;
+    }
+  </style>
 
   <style>
     :root {
@@ -1884,7 +1895,7 @@
   <!-- GSAP Library (loaded with SRI + defer for non-blocking) -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" integrity="sha512-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGkTsoIVsiP1iaTtM8b3+hu2kB6pQ4Clr5yug==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" integrity="sha512-Ic9xkERjyZ1xgJ5svx3y0u3xrvfT/uPkV99LBwe68xjy/mGtO+4eURHZBW2xW4SZbFrF1Tf090XqB+EVgXnVjw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js" integrity="sha512-LTe6SozZBL8Sg0Z3aIfYJmNWLuqw7czL9fRLMT/eKTQzEqOG8Rk/hwVGQKCz/NqIJGf2xp4kEfEHt3v/XxCJx==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js" integrity="sha512-v/m68W+vaGN/6igoyFpd4GlQzu0jx9/n5gr2PKq5vif+RObyGKHse384YHrOULaxZ810XhlHUrmB3U8UnPB19Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <!-- ==================== GSAP ANIMATIONS ==================== -->
   <script defer src="./app.js"></script>
