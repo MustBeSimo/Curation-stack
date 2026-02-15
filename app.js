@@ -1,4 +1,18 @@
 window.addEventListener('DOMContentLoaded', function() {
+
+// ==================== MOBILE TABLE DATA-LABELS (No GSAP dependency) ====================
+document.querySelectorAll('.comp-table').forEach(function(table) {
+  var headers = [];
+  table.querySelectorAll('thead th').forEach(function(th) {
+    headers.push(th.textContent.trim());
+  });
+  table.querySelectorAll('tbody tr').forEach(function(row) {
+    row.querySelectorAll('td').forEach(function(td, i) {
+      if (headers[i]) td.setAttribute('data-label', headers[i]);
+    });
+  });
+});
+
 // Section name map for accessible nav dot labels
 var sectionNames = {
   'hero': 'Top',
@@ -64,14 +78,19 @@ if (window.gsap && window.ScrollTrigger) {
     );
   });
 
-  // Batched child animations (reduces trigger count drastically)
+  // Batched child animations (skip scrollytelling containers)
   ScrollTrigger.batch('.section p, .section h3', {
     start: 'top 88%',
     onEnter: function(batch) {
-      gsap.fromTo(batch,
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.06 }
-      );
+      var filtered = batch.filter(function(el) {
+        return !el.closest('.stack-content') && !el.closest('.quality-arc');
+      });
+      if (filtered.length) {
+        gsap.fromTo(filtered,
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.5, stagger: 0.06 }
+        );
+      }
     },
     once: true
   });
@@ -98,8 +117,9 @@ if (window.gsap && window.ScrollTrigger) {
     once: true
   });
 
-  // Unique elements: one trigger each (diagrams, code blocks, thesis boxes, etc.)
+  // Unique elements (skip section-04 diagram — handled by scrollytelling)
   gsap.utils.toArray('.diagram, .case-study, .prediction').forEach(function(el) {
+    if (el.classList.contains('diagram') && el.closest('#section-04')) return;
     gsap.fromTo(el,
       { opacity: 0, y: 30 },
       { opacity: 1, y: 0, duration: 0.8,
@@ -141,8 +161,9 @@ if (window.gsap && window.ScrollTrigger) {
     );
   });
 
-  // Flow rows within diagrams (staggered per diagram)
+  // Flow rows within diagrams (skip section-04 — handled by scrollytelling)
   gsap.utils.toArray('.diagram').forEach(function(diagram) {
+    if (diagram.closest('#section-04')) return;
     var rows = diagram.querySelectorAll('.flow-row');
     gsap.fromTo(rows,
       { opacity: 0, x: -16 },
@@ -150,6 +171,67 @@ if (window.gsap && window.ScrollTrigger) {
         scrollTrigger: { trigger: diagram, start: 'top 80%', once: true }
       }
     );
+  });
+
+  // ==================== PHASE CARDS (Section 02) ====================
+  ScrollTrigger.batch('.phase-card', {
+    start: 'top 88%',
+    onEnter: function(batch) {
+      batch.forEach(function(card, i) {
+        gsap.to(card, {
+          opacity: 1, y: 0, duration: 0.5, delay: i * 0.15,
+          onComplete: function() { card.classList.add('is-visible'); }
+        });
+      });
+    },
+    once: true
+  });
+
+  // ==================== STICKY SCROLLYTELLING (Section 04) ====================
+  function activateLayer(layer) {
+    document.querySelectorAll('.flow-row[data-layer]').forEach(function(row) {
+      row.classList.toggle('is-active', row.dataset.layer === layer);
+    });
+    document.querySelectorAll('.stack-explain').forEach(function(explain) {
+      explain.classList.toggle('is-active', explain.dataset.layer === layer);
+    });
+  }
+
+  ScrollTrigger.matchMedia({
+    // Desktop: pin diagram, highlight layers on scroll
+    '(min-width: 769px)': function() {
+      ScrollTrigger.create({
+        trigger: '.stack-scroll',
+        start: 'top 15%',
+        end: 'bottom 80%',
+        pin: '.stack-pin',
+        pinSpacing: false
+      });
+
+      gsap.utils.toArray('.stack-explain').forEach(function(explain) {
+        ScrollTrigger.create({
+          trigger: explain,
+          start: 'top 60%',
+          end: 'bottom 40%',
+          onEnter: function() { activateLayer(explain.dataset.layer); },
+          onEnterBack: function() { activateLayer(explain.dataset.layer); }
+        });
+      });
+
+      // Initial state: first layer active
+      activateLayer('0');
+    },
+    // Mobile: simple stagger reveal, no pinning
+    '(max-width: 768px)': function() {
+      gsap.utils.toArray('.stack-explain').forEach(function(explain) {
+        gsap.fromTo(explain,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5,
+            scrollTrigger: { trigger: explain, start: 'top 85%', once: true }
+          }
+        );
+      });
+    }
   });
 
   // Footer animation
@@ -160,7 +242,7 @@ if (window.gsap && window.ScrollTrigger) {
     }
   );
 
-  // Navigation dots
+  // ==================== NAVIGATION DOTS ====================
   var navDotsContainer = document.getElementById('navDots');
   var allSections = document.querySelectorAll('.section');
   var sectionIds = ['hero'];
@@ -194,7 +276,7 @@ if (window.gsap && window.ScrollTrigger) {
     navDotsContainer.appendChild(dot);
   });
 
-  // Update active dot on scroll
+  // Update active dot on scroll with progress ring
   sectionIds.forEach(function(id, i) {
     var el = document.getElementById(id);
     if (!el) return;
@@ -204,7 +286,11 @@ if (window.gsap && window.ScrollTrigger) {
       start: 'top center',
       end: 'bottom center',
       onEnter: function() { updateActiveDot(i); },
-      onEnterBack: function() { updateActiveDot(i); }
+      onEnterBack: function() { updateActiveDot(i); },
+      onUpdate: function(self) {
+        var dot = navDotsContainer.querySelectorAll('.nav-dot')[i];
+        if (dot) dot.style.setProperty('--progress', self.progress);
+      }
     });
   });
 
@@ -245,6 +331,12 @@ if (window.gsap && window.ScrollTrigger) {
       el.style.filter = 'none';
     });
   document.querySelectorAll('.hero h1 .line-inner')
+    .forEach(function(el) {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  // Reveal scrollytelling elements
+  document.querySelectorAll('.phase-card,.stack-explain,.flow-row[data-layer]')
     .forEach(function(el) {
       el.style.opacity = '1';
       el.style.transform = 'none';
